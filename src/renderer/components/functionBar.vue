@@ -62,7 +62,7 @@ export default {
   border-radius: 50%;
   margin: 0 10px;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
-  transition: box-shadow, transform, background-color 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 .function-bar-wrapper > .button:hover {
