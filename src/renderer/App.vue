@@ -14,14 +14,14 @@ import logoSearch from "./components/logoSearch";
 import downloadManager from "./components/downloadManager";
 import picList from "./components/picList";
 
-import login from "../core/pixiv/login";
+import cookie from "../core/pixiv/cookie";
 
 export default {
   name: "electron-moe-loader",
   components: { functionBar, logoSearch, downloadManager, picList },
   methods: {
     async debug() {
-      await login();
+      await cookie.updateCookie();
     }
   }
 };
