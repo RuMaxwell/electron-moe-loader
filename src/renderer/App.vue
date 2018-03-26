@@ -4,6 +4,7 @@
     <logo-search></logo-search>
     <pic-list class="pic-list"></pic-list>
     <download-manager class="download-manager"></download-manager>
+    <button @click="debug">debug</button>
   </div>
 </template>
 
@@ -13,9 +14,16 @@ import logoSearch from "./components/logoSearch";
 import downloadManager from "./components/downloadManager";
 import picList from "./components/picList";
 
+import login from "../core/pixiv/login";
+
 export default {
   name: "electron-moe-loader",
-  components: { functionBar, logoSearch, downloadManager, picList }
+  components: { functionBar, logoSearch, downloadManager, picList },
+  methods: {
+    async debug() {
+      await login();
+    }
+  }
 };
 </script>
 
