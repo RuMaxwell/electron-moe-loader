@@ -1,7 +1,7 @@
 import urls from './urls'
 import request from 'request-promise-native'
 import cheerio from 'cheerio'
-import queryString from 'querystring'
+import tough from 'tough-cookie'
 
 /**
  * To login Pixiv with specified username and password.
@@ -10,23 +10,33 @@ import queryString from 'querystring'
  * @param {string} password The password of Pixiv.
  * @returns {cookieObj} the obj contains set-cookie info.
  */
-const login = async function (username, password) {
-  const loginStartPage = await axios.get(urls.loginStart);
-  let $ = cheerio.load(loginStartPage.data);
-  const initConfig = JSON.parse($('#init-config').val());
-  const postKey = initConfig.postKey;
-  
-  const params = queryString.stringify({
-    'pixiv_id': username,
-    'captcha': '',
-    'g_recaptcha_response': '',
-    'password': password,
-    'post_key': postKey,
-    'source': 'pc',
-    'ref': 'wwwtop_accounts_index',
-    'return_to': 'https://www.pixiv.net/'
+const login = async function (username, password, proxy) {
+  const myRequest = request.defaults({
+    proxy: proxy,
+    resolveWithFullResponse: true
   })
-  const loginResult = await axios.post(urls.loginApi, params, {
+  const loginStartPage = await myRequest.get(urls.loginStart);
+  let $ = cheerio.load(loginStartPage.body);
+  const initConfig = JSON.parse($('#init-config').val());
+  const postKey = initConfig['pixivAccount.postKey'];
+  const cookies = loginStartPage.headers['set-cookie'].map(tough.Cookie.parse);
+  let obj = {};
+  let cookieStr = '';
+  cookies.forEach((c) => {
+    cookieStr += `${c.key}=${c.value}; `;
+    obj[c.key] = c.value;
+  })
+  const loginResult = await myRequest.post(urls.loginApi, {
+    form: {
+      'pixiv_id': username,
+      'captcha': '',
+      'g_recaptcha_response': '',
+      'password': password,
+      'post_key': postKey,
+      'source': 'pc',
+      'ref': 'wwwtop_accounts_index',
+      'return_to': 'https://www.pixiv.net/'
+    },
     headers: {
       'Accept': 'application/json',
       'Origin': 'https://accounts.pixiv.net',
@@ -34,15 +44,15 @@ const login = async function (username, password) {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Referer': 'https://accounts.pixiv.net/login?lang=zh&source=pc&view_type=page&ref=wwwtop_accounts_index',
       'Accept-Encoding': 'gzip, deflate, br',
-      'Accept-Language': 'zh-CN,zh;q=0.9,zh-TW;q=0.8,en-US;q=0.7,en;q=0.6'
+      'Accept-Language': 'zh-CN,zh;q=0.9,zh-TW;q=0.8,en-US;q=0.7,en;q=0.6',
+      'Connection': 'keep-alive',
+      "Cookie": cookieStr
     }
   });
-  const loginResultObj = JSON.parse(loginResult.data);
-  if (loginResultObj.error === false) {
-    console.log(loginResult.headers);
-  } else {
-    throw 'Error occurs when try to login Pixiv:' + loginResult;
-  }
+  loginResult.headers['set-cookie'].map(tough.Cookie.parse).forEach((c) => {
+    obj[c.key] = c.value;
+  });
+  return obj;
 }
 
 export default {

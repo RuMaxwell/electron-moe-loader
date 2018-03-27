@@ -14,14 +14,16 @@ import logoSearch from "./components/logoSearch";
 import downloadManager from "./components/downloadManager";
 import picList from "./components/picList";
 
-import cookie from "../core/pixiv/cookie";
+import proxy from './utils/proxy';
 
 export default {
   name: "electron-moe-loader",
   components: { functionBar, logoSearch, downloadManager, picList },
   methods: {
     async debug() {
-      await cookie.updateCookie();
+      proxy.getProxy(this, (p) => {
+        console.log(p);
+      })
     }
   }
 };

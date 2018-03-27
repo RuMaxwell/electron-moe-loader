@@ -13,8 +13,8 @@ let cookieString;
  * @returns {string} a cookie string of the object.
  */
 const cookieStringGenerator = function (obj) {
-  let str;
-  for (key in obj) {
+  let str = '';
+  for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
       str = str + `${key}=${obj[key].toString()}; `;
     }
@@ -27,12 +27,13 @@ const cookieStringGenerator = function (obj) {
  * 
  * @returns {string} a cookie string.
  */
-const getCookieString = function () {
-  if (!cookieObj) {
-    const file = fs.readFileSync(path.resolve('./data/cookie.json'));
+const getCookieString = async function () {
+  if (cookieObj === undefined) {
+    const file = fs.readFileSync(path.resolve('./static/data/pixiv/cookie.json')).toString('utf8');
     cookieObj = JSON.parse(file);
-    if (cookieObj === {}) {
-      updateCookie();
+    if (Object.keys(cookieObj).length === 0) {
+      await updateCookie();
+      return cookieString;
     } else {
       cookieString = cookieStringGenerator(cookieObj);
       return cookieString;
@@ -47,7 +48,10 @@ const getCookieString = function () {
  */
 const updateCookie = async function () {
   const index = Math.floor(Math.random() * account.length);
-  await login.getLoginResult(account[index].username, account[index].password);
+  const cookie = await login.getLoginResult(account[index].username, account[index].password);
+  cookieObj = cookie;
+  cookieString = cookieStringGenerator(cookie);
+  fs.writeFileSync(path.resolve('./static/data/pixiv/cookie.json'), JSON.stringify(cookieObj));
 }
 
 export default {
