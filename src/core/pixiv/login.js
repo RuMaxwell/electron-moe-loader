@@ -1,5 +1,5 @@
 import urls from './urls'
-import axios from 'axios'
+import request from 'request-promise-native'
 import cheerio from 'cheerio'
 import queryString from 'querystring'
 
